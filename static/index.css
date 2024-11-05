@@ -1,0 +1,34 @@
+body {
+    background-color: black;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+#start_title{
+    color: #E34234;
+}
+
+.internal_links{
+    text-decoration: none;
+    color: white;
+}
+
+.internal_links:hover{
+    text-decoration: underline;
+    color: #777;
+}
+
+#begin_link{
+    font-size: large;
+}
+div{
+    color: white;
+}
+
+#red_line{
+    color: #E34234;
+    border: 1px solid #E34234;
+}
+
+h1{
+    color: white;
+}
