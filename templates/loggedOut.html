@@ -1,17 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryptive</title>
-    <link rel="stylesheet" href="/static/index.css">
-    <link rel="icon" href="/static/Encryptive Logo.png" type="image/x-icon">
-</head>
-<body>
-    <img src="/static/Encryptive Logo.png" alt="Logo" width="400" height="400">
+{% extends "external_base.html" %}
 
-    
-    <hr id="white_line">
-    <hr id="red_line">
-</body>
-</html>
+{% block title %}Logged Out{% endblock %}
+{% block int_title %}Logged Out{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+{%block footer%}
+    <a href="home.html" class="internal_links" id="begin_link">Click to go back to the beginning</a>
+{%endblock%}

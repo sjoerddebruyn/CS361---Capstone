@@ -1,34 +1,72 @@
+/* Base styles */
 body {
     background-color: black;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
-#start_title{
+/* Header title styling */
+#start_title {
     color: #E34234;
 }
 
-.internal_links{
+/* Link styles */
+.internal_links {
     text-decoration: none;
     color: white;
 }
 
-.internal_links:hover{
+.internal_links:hover {
     text-decoration: underline;
     color: #777;
 }
 
-#begin_link{
+#begin_link {
     font-size: large;
 }
-div{
+
+/* General text color for divs */
+div {
     color: white;
 }
 
-#red_line{
+/* Horizontal line styling */
+#red_line {
     color: #E34234;
     border: 1px solid #E34234;
 }
 
-h1{
+#white_line {
+    border: 1px solid white;
+}
+
+/* Header and footer styles */
+h1 {
     color: white;
+}
+
+/* External base specific header styling - Stack image and title vertically */
+.header {
+    display: flex;
+    flex-direction: column; /* Stack image and title vertically */
+    align-items: center; /* Center the content horizontally */
+    justify-content: center; /* Center vertically if needed */
+    margin-top: 40px; /* Increased gap between image and header */
+}
+
+.content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: justify; /* Justify content within the block */
+    margin: 20px auto;
+    width: 80%; /* You can adjust this percentage for desired width */
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%; /* Ensures the footer takes up the entire width */
+    text-align: center;
+    background-color: transparent; /* No color change for the footer */
+    padding: 10px 0;
 }

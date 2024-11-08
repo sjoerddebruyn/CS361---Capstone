@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryptive</title>
-    <link rel="stylesheet" href="/static/index.css">
-    <link rel="icon" href="/static/Encryptive Logo.png" type="image/x-icon">
-</head>
-<body>
-    <img src="/static/Encryptive Logo.png" alt="Logo" width="100" height="100">
+{% extends "internal_base.html" %}
 
-    <h1>Login</h1>
+{% block title %}Login{% endblock %}
+{% block int_title %}Login{% endblock %}
+
+{% block content %}
     <div>
         <p>
             Login to encrypt data and access your keys
@@ -23,15 +16,14 @@
             <br>
             <button type="submit">Submit</button>
         </form>
-        <a href="forgotPassword.html" class="internal_links">forgot password?</a>
+        <a href="forgotPassword.html" class="internal_links">Forgot password?</a>
         <br>
         <a href="register.html" class="internal_links">If you haven't already, sign up here</a>
     </div>
     
-    <hr id="white_line">
-    <hr id="red_line">
 
-    <a href="home.html" class="internal_links">home</a>
-    
-</body>
-</html>
+{% endblock %}
+
+{%block footer%}
+    <a href="home.html" class="internal_links">Home</a>
+{%endblock%}

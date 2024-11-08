@@ -1,23 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryptive</title>
-    <link rel="stylesheet" href="/static/index.css">
-    <link rel="icon" href="/static/Encryptive Logo.png" type="image/x-icon">
-</head>
-<body>
-    <img src="/static/Encryptive Logo.png" alt="Logo" width="100" height="100">
-    <h1>Encrypt</h1>
+{%extends "internal_base.html"%}
 
-    <div>
-        <p></p>
+{%block title%}Encrypt{%endblock%}
+{%block int_title%}Encrypt{%endblock%}
 
-        <form>
-    </div>
-    
-    <hr id="white_line">
-    <hr id="red_line">
-</body>
-</html>
+{%block footer%}
+    <a href="encryptInfo.html" class="internal_links">Encryption Information</a>
+    <a href="selection.html" class="internal_links">Selection</a>
+    <a href="loggedOut.html" class="internal_links">Logout</a>
+{%endblock%}

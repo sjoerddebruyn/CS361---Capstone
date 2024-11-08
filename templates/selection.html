@@ -1,27 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryptive</title>
-    <link rel="stylesheet" href="/static/index.css">
-    <link rel="icon" href="/static/Encryptive Logo.png" type="image/x-icon">
-</head>
-<body>
-    <img src="/static/Encryptive Logo.png" alt="Logo" width="100" height="100">
+{% extends "internal_base.html" %}
 
-    <h1>Selection</h1>
+{% block title %}Selection{% endblock %}
+{% block int_title %}Selection{% endblock %}
+
+{% block content %}
     <div>
-
-        <!-- test user is a temp name but should display name of user -->
+        <!-- Links for data encryption and decryption options -->
         <a href="encrypt.html" class="internal_links">Encrypt Data</a>
         <a href="decrypt.html" class="internal_links">Decrypt Data</a>
-        <!--key access is a maybe-->
-        <a href></a>
+        <!-- Key access link can be added here if needed -->
     </div>
-    <hr id="white_line">
-    <hr id="red_line">
-    <a href="home.html" class="internal_links">Home</a>
-    <a href="loggedOut.html"class="internal_links">Logout</a>
-</body>
-</html>
+    
+
+{% endblock %}
+
+{%block footer%}
+    <a href="loggedOut.html" class="internal_links">Logout</a>
+{%endblock%}

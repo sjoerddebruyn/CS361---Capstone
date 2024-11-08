@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryptive</title>
-    <link rel="stylesheet" href="/static/index.css">
-    <link rel="icon" href="/static/Encryptive Logo.png" type="image/x-icon">
-</head>
-<body>
-    <img src="/static/Encryptive Logo.png" alt="Logo" width="100" height="100">
+{% extends "internal_base.html" %}
 
-    <h1>Sign Up</h1>
+{% block title %}Register{% endblock %}
+{% block int_title %}Register{% endblock %}
+
+{% block content %}
     <div>
         <p>
             Encryption is free and easy, just sign up!
@@ -22,13 +15,12 @@
             <label for="email">Email</label>
             <input name="email" type="email" id="email" placeholder="email..." required>
 
-            <br>
-            <br>
-            
+            <br><br>
+
             <label for="password">Password</label>
             <input name="password" type="password" id="password" placeholder="password..." required>
 
-            <label for="confirm_password">Password</label>
+            <label for="confirm_password">Confirm Password</label>
             <input name="confirm_password" type="password" id="confirm_password" placeholder="confirm password..." required>
 
             <br>
@@ -36,10 +28,8 @@
         </form>
     </div>
     
-    <hr id="white_line">
-    <hr id="red_line">
 
-    <a href="home.html" class="internal_links">home</a>
-    
-</body>
-</html>
+{% endblock %}
+{%block footer%}
+    <a href="home.html" class="internal_links">Home</a>
+{%endblock%}
