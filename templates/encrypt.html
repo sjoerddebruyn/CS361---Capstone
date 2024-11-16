@@ -3,6 +3,29 @@
 {%block title%}Encrypt{%endblock%}
 {%block int_title%}Encrypt{%endblock%}
 
+{%block content%}
+    <div>
+        <p>
+        </p>
+        <form action="/encrypt" method="post" enctype="multipart/form-data">
+            <label for="input_file">Input a text file</label>
+            <input id="input_file" type="file" name="file" required>
+        
+            <label for="encrypt_algorithm">Select an encryption algorithm</label>
+            <select id="encrypt_algorithm" name="algorithm">
+                <option value="AES">AES</option>
+                <option value="RSA">RSA</option>
+                <option value="SHA512">SHA-512</option>
+            </select>
+        
+            <label for="encrypt_password">Enter an encryption password:</label>
+            <input id="encrypt_password" type="password" name="password" required>
+        
+            <button type="submit">Submit</button>
+        </form>        
+    </div>
+{%endblock%}
+
 {%block footer%}
     <a href="encryptInfo.html" class="internal_links">Encryption Information</a>
     <a href="selection.html" class="internal_links">Selection</a>

@@ -1,75 +1,104 @@
-import random
+import json
+import socket
 import os
 import hashlib
 import hmac
 import secrets
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
+# Load environment variables from the .env file
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB_NAME = MONGO_URI.split("/")[-1].split("?")[0]
+
+try:
+    client = MongoClient(MONGO_URI)
+    db = client[MONGO_DB_NAME]
+except Exception as e:
+    print(f"Error connecting to MongoDB: {e}")
+    exit()
 
 def salt_gen(length=16):
     return os.urandom(length)
     
-
 def seed_gen():
     return secrets.token_hex(16)
-    
 
-def key_gen(salt,seed,length=32):
+def key_gen(salt, seed, length=32):
     return hmac.new(salt, seed.encode(), hashlib.sha256).digest()[:length]
 
 def gen_encryption_comps():
     salt = salt_gen()
     seed = seed_gen()
     key = key_gen(salt, seed)
-    return{
+    return {
         'Salt': salt.hex(),
         'Seed': seed,
         'Key': key.hex()
     }
 
-def save_key(id):
-    filename = f"{id}_key.txt"
-    unique_key = False
-    
-    while not unique_key:
-        encrypt_comps = gen_encryption_comps()
-        encrypt_key = encrypt_comps['Key']
+def save_key_to_mongo(user_id, file_name, algorithm, password, encryption_comps):
+    user_collection = db[f"{user_id}_keys"]
+    user_collection.insert_one({
+        "file_name": file_name,
+        "algorithm": algorithm,
+        "password": password,
+        "key": encryption_comps["Key"],
+        "salt": encryption_comps["Salt"],
+        "seed": encryption_comps["Seed"],
+    })
 
-        if os.path.exists(filename):
-            with open(filename, 'r') as file:
-                existing_keys = file.readlines()
-                existing_keys = [line.strip() for line in existing_keys]
+def handle_client_connection(client_socket):
+    try:
+        request_data = client_socket.recv(1024).decode()
+        data = json.loads(request_data)
 
-                if encrypt_key in existing_keys:
-                    print("Duplicate key found, regenarating...")
-                    continue
+        user_id = data.get("user_id")
+        file_name = data.get("file_name")
+        algorithm = data.get("algorithm")
+        password = data.get("password")
 
-        with open(filename, "a") as file:
-            file.write(f"{encrypt_key}\n")
-        print(f"Unique key appended to {filename}")
+        # Validate data
+        if not all([user_id, file_name, algorithm, password]):
+            client_socket.sendall(json.dumps({"error": "Missing required fields"}).encode())
+            return
 
-        print("Salt:", encrypt_comps['Salt'])
-        print("Seed:", encrypt_comps['Seed'])
-        print("Key:", encrypt_comps['Key'])
+        encryption_comps = gen_encryption_comps()
 
-        unique_key = True
+        # Save to MongoDB
+        save_key_to_mongo(user_id, file_name, algorithm, password, encryption_comps)
 
+        # Send response back
+        response = {
+            "key": encryption_comps["Key"],
+            "salt": encryption_comps["Salt"],
+            "seed": encryption_comps["Seed"],
+        }
+        print(f"Sending response: {response}")
+        client_socket.sendall(json.dumps(response).encode())
 
-id = input("User ID: ")
-save_key(id)
+    except json.JSONDecodeError:
+        print(f"Sending response: {response}")
+        client_socket.sendall(json.dumps({"error": "Invalid JSON format"}).encode())
+    except Exception as e:
+        client_socket.sendall(json.dumps({"error": str(e)}).encode())
+    finally:
+        client_socket.close()
 
-# I might want to add in a unique ID per key instead of just the key. 
-#       - Easier lookups, no issues with deleting and reusing indices
-#       - Would have to change unique identifcation logic
+def start_key_gen_server():
+    HOST = '127.0.0.1'
+    PORT = 65432
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
+        server_socket.bind((HOST, PORT))
+        server_socket.listen(5)
+        print("Key generator listening on port:", PORT)
 
-# I might also want to add the seed and salt with the key
-#       - Depending on wheter I use just the key for encryption or the salt and seed as well
-#       - Would have to change unique identifcation logic
-#       - Would have to storage method
+        while True:
+            client_socket, addr = server_socket.accept()
+            print("Connection from:", addr)
+            handle_client_connection(client_socket)
 
-# I might want to add a password requirement
-#       - Would need to add a user/password list to cross-reference
-#       - Would add MFA
-
-# I might want to add user lookup either in this file or in another
-#       - This way a user can gen keys and retrieve if they would like
-
+if __name__ == "__main__":
+    start_key_gen_server()
