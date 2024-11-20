@@ -1,6 +1,8 @@
 import os
+import io
+import base64
 from fastapi import FastAPI, Request, Form, UploadFile, Depends, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from utils.id_gen import id_gen
@@ -77,7 +79,8 @@ async def login(
     user = await app.mongodb["users"].find_one({"username": username})
     if user and user["password"] == password:
         request.session["user_id"] = user["id"]  # Start session
-        return RedirectResponse(url="/selection.html", status_code=302)
+        
+        return RedirectResponse(url="/encrypt.html", status_code=302)
     return templates.TemplateResponse("login.html", {"request": request, "error": "Incorrect username or password"})
 
 @app.post("/logout")
@@ -100,6 +103,15 @@ async def register(
     if password != confirm_password:
         return templates.TemplateResponse("register.html", {"request": request, "error": "Passwords do not match."})
     
+    # Check if the username already exists
+    existing_user = await app.mongodb["users"].find_one({"username": username})
+    if existing_user:
+        return templates.TemplateResponse(
+            "register.html", 
+            {"request": request, "error": "Username already taken. Please choose a different one."}
+        )
+    
+    # Proceed with registration if the username is available
     user_id = id_gen()
     await app.mongodb["users"].insert_one({
         "username": username,
@@ -108,6 +120,7 @@ async def register(
         "id": user_id
     })
     return RedirectResponse(url="/login.html", status_code=302)
+
 
 @app.get("/selection.html", response_class=HTMLResponse)
 async def read_selection(request: Request):
@@ -136,8 +149,8 @@ async def show_encrypt(request: Request):
 @app.post("/encrypt", response_class=JSONResponse)
 async def encrypt(
     request: Request,
-    algorithm: str = Form(...),
     file: UploadFile = None,
+    algorithm: str = Form(...),
     password: str = Form(...),
 ):
     user_id = get_current_user(request)  # Ensure user is authenticated
@@ -148,11 +161,12 @@ async def encrypt(
     file_content = (await file.read()).decode("utf-8")
     file_name = file.filename
 
-    # Communicate with the encryption microservice
-    HOST, PORT = "127.0.0.1", 65432
+    # Communicate with the key generation microservice
+    HOST, KEYPORT, ENCRYPTPORT = "127.0.0.1", 65432, 65433
+
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect((HOST, PORT))
+            client.connect((HOST, KEYPORT))
             request_data = json.dumps({
                 "user_id": user_id,
                 "file_name": file_name,
@@ -164,14 +178,39 @@ async def encrypt(
             response_data = client.recv(1024).decode()
             response = json.loads(response_data)
 
+            # extract key (potentially seed and salt as well) from keygen response
+            key = response.get("key")
+            iv = response.get("iv")
+
             # Handle errors from the encryption service
             if "error" in response:
                 return JSONResponse({"error": response["error"]}, status_code=500)
-    
-            return RedirectResponse(url="/encryptSuccess.html", status_code=302)
-
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+    
+    try:
+        # some issue with encryption that must be handled
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:   
+            client.connect((HOST, ENCRYPTPORT))
+            request_data = json.dumps({
+                "service_type": "e",
+                "file_name": file_name,
+                "file_content": file_content,
+                "key": key,
+                "iv": iv,
+                "algorithm": algorithm
+            })
+            client.sendall(request_data.encode())
+            response_data = client.recv(1024).decode()
+            response = json.loads(response_data)
+ 
+            if "error" in response:
+                return JSONResponse({"error": response["error"]}, status_code=500)
+    except Exception as e:
+        return JSONResponse({"error, issue with e": str(e)}, status_code=500)
+
+    
+    return RedirectResponse(url="/encryptSuccess.html", status_code=302)
 
 @app.get("/encryptInfo.html", response_class=HTMLResponse)
 async def read_encryptInfo(request: Request):

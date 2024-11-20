@@ -2,71 +2,373 @@
 body {
     background-color: black;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    margin: 0;
+    padding: 0;
+    padding-top: 120px; /* Space for the fixed header */
+    padding-bottom: 60px; /* Space for the fixed footer */
+    color: white; /* Default text color */
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
-/* Header title styling */
-#start_title {
-    color: #E34234;
+/* Ensure all paragraphs are white */
+p {
+    color: white; /* Set paragraphs to white for better readability */
 }
 
 /* Link styles */
 .internal_links {
     text-decoration: none;
-    color: white;
+    color: white; /* Default link color */
 }
 
 .internal_links:hover {
     text-decoration: underline;
-    color: #777;
+    color: #777; /* Hover color */
 }
 
-#begin_link {
-    font-size: large;
+.internal_links:visited {
+    color: white; /* Visited links color */
 }
 
-/* General text color for divs */
-div {
-    color: white;
-}
-
-/* Horizontal line styling */
-#red_line {
-    color: #E34234;
-    border: 1px solid #E34234;
-}
-
-#white_line {
-    border: 1px solid white;
+.internal_links:active {
+    color: #c33d2f; /* Active (clicked) link color */
 }
 
 /* Header and footer styles */
-h1 {
-    color: white;
+.header, .footer {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    z-index: 10; /* Ensure it stays on top */
+    background-color: black; /* Black background for header and footer */
 }
 
-/* External base specific header styling - Stack image and title vertically */
 .header {
+    position: fixed;
+    top: 0px;
+    height: 120px;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    background-color: black;
     display: flex;
-    flex-direction: column; /* Stack image and title vertically */
-    align-items: center; /* Center the content horizontally */
-    justify-content: center; /* Center vertically if needed */
-    margin-top: 40px; /* Increased gap between image and header */
+    align-items: center;
+    justify-content: center; /* Center content horizontally */
+    padding: 20px;
+    color: white;
+    text-align: center;
 }
 
+.header img {
+    position: absolute; /* Take the logo out of the flow */
+    top: 20px;
+    left: 20px; /* Adjust spacing from the left edge */
+    height: 100px;
+}
+
+.header h1 {
+    margin: 0;
+    flex: none; /* Prevent flex-shrink or flex-grow */
+    text-align: center; /* Ensure text alignment */
+}
+
+
+.footer {
+    bottom: 0;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.footer #white_line,
+.footer #red_line {
+    width: 100%;
+    border: none;
+    height: 1px;
+}
+
+.footer #white_line {
+    background-color: white;
+}
+
+.footer #red_line {
+    background-color: #E34234;
+}
+
+/* Content styling */
 .content {
+    margin-top: 60px; /* Push down content so it's not covered by fixed header */
+    margin-bottom: 40px; /* Space for footer */
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: justify; /* Justify content within the block */
+    text-align: justify;
+    width: 80%;
     margin: 20px auto;
-    width: 80%; /* You can adjust this percentage for desired width */
+    color: white;
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%; /* Ensures the footer takes up the entire width */
+/* Form Container Styling */
+form {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Form Row for Label and Input */
+.form-row {
+    display: flex;
+    flex-direction: column; /* Stack labels above inputs */
+    gap: 10px; /* Space between label and input */
+}
+
+/* Input Styling */
+input {
+    background-color: #333;
+    color: white;
+    font-size: 16px;
+    padding: 10px;
+    border: 1px solid #E34234;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+/* Dropdown Menu Styles */
+.select-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.select-container label {
+    display: block;
+    margin-bottom: 10px; /* Add space between label and dropdown */
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    background-color: #333; /* Dark background */
+    color: white;
+    border: 1px solid #E34234; /* Red border */
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Hover, focus, and active styles */
+select:hover {
+    background-color: #444; /* Slightly lighter background on hover */
+}
+
+select:focus {
+    border-color: #E34234; /* Border color on focus */
+    background-color: #444;
+    box-shadow: 0 0 10px rgba(227, 66, 52, 0.8); /* Glow effect on focus */
+}
+
+/* File input styles */
+.file-input-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* You can adjust width as per your design */
+    margin: 20px 0;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #333; /* Dark background */
+    color: white;
+    border: 1px solid #E34234; /* Red border */
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0; /* Hide the actual file input */
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+.file-input-label {
+    display: inline-block;
+    background-color: #444; /* Slightly lighter background */
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
     text-align: center;
-    background-color: transparent; /* No color change for the footer */
-    padding: 10px 0;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* Hover and focus effects for file input label */
+.file-input-label:hover {
+    background-color: #555;
+}
+
+.file-input-label:active {
+    background-color: #E34234;
+}
+
+/* Display file name after selecting a file */
+.file-input-container input[type="file"]:valid + .file-input-label::after {
+    content: attr(data-filename);
+    color: #ccc; /* Light color for the file name */
+    font-size: 14px;
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+}
+
+/* Button Styling */
+button {
+    background-color: #E34234;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: #c33d2f;
+    transform: translateY(-2px);
+}
+
+button:active {
+    background-color: #a3352b;
+    transform: translateY(0);
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(227, 66, 52, 0.8);
+}
+
+/* Form input and button focus */
+form input:focus,
+form button:focus {
+    outline: none;
+}
+
+
+/* Prevent text from overflowing off the screen */
+html, body {
+    width: 100%;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.content {
+    max-width: 100%; /* Ensure content does not overflow */
+}
+
+/* Dropdown Menu Styles */
+.select-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* You can adjust width as per your design */
+    margin: 20px 0;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    background-color: #333; /* Dark background */
+    color: white;
+    border: 1px solid #E34234; /* Red border */
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Hover, focus, and active styles */
+select:hover {
+    background-color: #444; /* Slightly lighter background on hover */
+}
+
+select:focus {
+    border-color: #E34234; /* Border color on focus */
+    background-color: #444;
+    box-shadow: 0 0 10px rgba(227, 66, 52, 0.8); /* Glow effect on focus */
+}
+
+/* File input styles */
+.file-input-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* You can adjust width as per your design */
+    margin: 20px 0;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #333; /* Dark background */
+    color: white;
+    border: 1px solid #E34234; /* Red border */
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0; /* Hide the actual file input */
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+.file-input-label {
+    display: inline-block;
+    background-color: #444; /* Slightly lighter background */
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* Hover and focus effects for file input label */
+.file-input-label:hover {
+    background-color: #555;
+}
+
+.file-input-label:active {
+    background-color: #E34234;
+}
+
+/* Display file name after selecting a file */
+.file-input-container input[type="file"]:valid + .file-input-label::after {
+    content: attr(data-filename);
+    color: #ccc; /* Light color for the file name */
+    font-size: 14px;
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+}
+
+#ext_img{
+    height: 400px;
+    width: 400px;
+}
+
+.selection{
+    color: white;
 }

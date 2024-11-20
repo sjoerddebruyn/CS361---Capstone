@@ -29,14 +29,19 @@ def seed_gen():
 def key_gen(salt, seed, length=32):
     return hmac.new(salt, seed.encode(), hashlib.sha256).digest()[:length]
 
+def iv_gen():
+    return os.urandom(16)
+
 def gen_encryption_comps():
     salt = salt_gen()
     seed = seed_gen()
     key = key_gen(salt, seed)
+    iv = iv_gen()
     return {
-        'Salt': salt.hex(),
-        'Seed': seed,
-        'Key': key.hex()
+        'salt': salt.hex(),
+        'seed': seed,
+        'key': key.hex(),
+        'iv': iv
     }
 
 def save_key_to_mongo(user_id, file_name, algorithm, password, encryption_comps):
@@ -45,9 +50,10 @@ def save_key_to_mongo(user_id, file_name, algorithm, password, encryption_comps)
         "file_name": file_name,
         "algorithm": algorithm,
         "password": password,
-        "key": encryption_comps["Key"],
-        "salt": encryption_comps["Salt"],
-        "seed": encryption_comps["Seed"],
+        "key": encryption_comps["key"],
+        "salt": encryption_comps["salt"],
+        "seed": encryption_comps["seed"],
+        "iv": encryption_comps["iv"],
     })
 
 def handle_client_connection(client_socket):
@@ -72,9 +78,10 @@ def handle_client_connection(client_socket):
 
         # Send response back
         response = {
-            "key": encryption_comps["Key"],
-            "salt": encryption_comps["Salt"],
-            "seed": encryption_comps["Seed"],
+            "key": encryption_comps["key"],
+            "salt": encryption_comps["salt"],
+            "seed": encryption_comps["seed"],
+            "iv": encryption_comps["iv"]
         }
         print(f"Sending response: {response}")
         client_socket.sendall(json.dumps(response).encode())
