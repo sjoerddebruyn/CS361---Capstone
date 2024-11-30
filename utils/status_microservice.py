@@ -1,7 +1,7 @@
 import socket
 
 HOST = '127.0.0.1'
-PORT = 65434
+PORT = 65430
 BUFFER_SIZE = 128 
 
 # Message dictionary, feel free to change to whatever flag syntax will be used

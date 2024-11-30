@@ -4,7 +4,23 @@
 {%block int_title%}Decrypt{%endblock%}
 
 {%block content%}
+<div>
+    <form action="/decrypt" method="post" enctype="multipart/form-data">
+        <!-- File Input -->
+        <div class="file-input-container">
+            <input id="input_file" type="file" name="file" required>
+            <label for="input_file" class="file-input-label">Choose an encrypted file</label>
+        </div>
 
+        <!-- Password Input -->
+        <label for="decrypt_password">Enter your decryption password:</label>
+        <input id="decrypt_password" type="password" name="password" required>
+
+        <!-- Submit Button -->
+        <button type="submit">Submit</button>
+        <p>Please have patience as the decryption make take a few seconds to process</p>
+    </form>        
+</div>
 {%endblock%}
 
 {%block footer%}

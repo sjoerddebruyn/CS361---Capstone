@@ -76,12 +76,32 @@ async def login(
     username: str = Form(...),
     password: str = Form(...),
 ):
-    user = await app.mongodb["users"].find_one({"username": username})
-    if user and user["password"] == password:
-        request.session["user_id"] = user["id"]  # Start session
-        
-        return RedirectResponse(url="/encrypt.html", status_code=302)
-    return templates.TemplateResponse("login.html", {"request": request, "error": "Incorrect username or password"})
+    HOST, USER_MICROSERVICE_PORT = "127.0.0.1", 65431
+
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect((HOST, USER_MICROSERVICE_PORT))
+            login_request_data = json.dumps({
+                "username": username,
+                "password": password,
+            })
+
+            client_socket.sendall(login_request_data.encode())
+            response_data = client_socket.recv(1024).decode()
+            response = json.loads(response_data)
+        if response.get("status") == "success":
+            user = response.get("user")
+            request.session["user_id"] = user["id"]  # Start session
+            send_notification("ls")
+            return RedirectResponse(url="/selection.html", status_code=302)
+        else:
+            send_notification("lf")
+            return templates.TemplateResponse("login.html")
+
+
+    except Exception as e:
+        send_notification("lf")
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Incorrect username or password"})
 
 @app.post("/logout")
 async def logout(request: Request):
@@ -100,25 +120,33 @@ async def register(
     password: str = Form(...),
     confirm_password: str = Form(...),
 ):
+    # Step 1: Check if the passwords match
     if password != confirm_password:
+        send_notification("rf")  # Send notification for registration failure
         return templates.TemplateResponse("register.html", {"request": request, "error": "Passwords do not match."})
-    
-    # Check if the username already exists
+
+    # Step 2: Check if the username already exists in the database
     existing_user = await app.mongodb["users"].find_one({"username": username})
     if existing_user:
+        send_notification("rf")  # Send notification for registration failure
         return templates.TemplateResponse(
             "register.html", 
             {"request": request, "error": "Username already taken. Please choose a different one."}
         )
     
-    # Proceed with registration if the username is available
-    user_id = id_gen()
+    # Step 3: Proceed with user registration
+    user_id = id_gen()  # Generate a unique user ID
     await app.mongodb["users"].insert_one({
         "username": username,
         "email": email,
         "password": password,
         "id": user_id
     })
+    
+    # Step 4: Send registration success notification
+    send_notification("rs")  # Send notification for registration success
+
+    # Step 5: Redirect to login page after successful registration
     return RedirectResponse(url="/login.html", status_code=302)
 
 
@@ -138,9 +166,44 @@ async def read_forgotPassword(request: Request):
 async def read_decrypt(request: Request):
     return templates.TemplateResponse("decrypt.html", {"request": request})
 
+@app.post("/decrypt.html", response_class=HTMLResponse)
+async def show_decrypt(
+    request: Request,
+    file: UploadFile = None,
+    password: str = Form(...),
+    ):
+
+    HOST, PORT = "127.0.0.1", 65433
+    user_id = get_current_user(request)
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_server:
+            client_server.connect((HOST, PORT))
+            request_data = json.dumps({
+                "user_id": user_id,
+                "service_type": "d",
+                "file_name": file,
+                "password": password
+            })
+
+            client_server.sendall(request_data.encode())
+            response_data = client_server.recv(1024).decode()
+            response = json.loads(response_data)
+
+            if "error" in response:
+                return JSONResponse({"error": response["error"]}, status_code=500)
+    except Exception as e:
+        return JSONResponse({"error, issue with e": str(e)}, status_code=500)
+
+    
+    return RedirectResponse(url="/decryptSuccess.html", status_code=302)
+
 @app.get("/decryptInfo.html", response_class=HTMLResponse)
 async def read_decryptInfo(request: Request):
     return templates.TemplateResponse("decryptInfo.html", {"request": request})
+
+@app.get("/decryptSuccess.html", response_class=HTMLResponse)
+async def read_decrypt_success(request:Request):
+    return templates.TemplateResponse("decryptSuccess.html", {"request": request})
 
 @app.get("/encrypt.html", response_class=HTMLResponse)
 async def show_encrypt(request: Request):
@@ -156,6 +219,8 @@ async def encrypt(
     user_id = get_current_user(request)  # Ensure user is authenticated
     if not file:
         return JSONResponse({"error": "No file provided."}, status_code=400)
+    
+    # i want to add here a check for if the user is logged in, if not do not let encrypt happen
 
     # Read the file content and metadata
     file_content = (await file.read()).decode("utf-8")
@@ -179,8 +244,13 @@ async def encrypt(
             response = json.loads(response_data)
 
             # extract key (potentially seed and salt as well) from keygen response
-            key = response.get("key")
-            iv = response.get("iv")
+            if algorithm == "AES" or algorithm == "ECC":
+                key = response.get("key")
+                iv = response.get("iv")
+            elif algorithm == "RSA":
+                public_key = response.get("public_key")
+                private_key = response.get("private_key")
+
 
             # Handle errors from the encryption service
             if "error" in response:
@@ -192,17 +262,29 @@ async def encrypt(
         # some issue with encryption that must be handled
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:   
             client.connect((HOST, ENCRYPTPORT))
-            request_data = json.dumps({
-                "service_type": "e",
-                "file_name": file_name,
-                "file_content": file_content,
-                "key": key,
-                "iv": iv,
-                "algorithm": algorithm
-            })
+            if algorithm == "AES" or algorithm == "ECC":
+                request_data = json.dumps({
+                    "service_type": "e",
+                    "file_name": file_name,
+                    "file_content": file_content,
+                    "key": key,
+                    "iv": iv,
+                    "algorithm": algorithm
+                })
+            elif algorithm == "RSA":
+                request_data = json.dumps({
+                    "service_type": "e",
+                    "file_name": file_name,
+                    "file_content": file_content,
+                    "public_key": public_key,
+                    "private_key": private_key,
+                    "algorithm": algorithm,
+                })
             client.sendall(request_data.encode())
             response_data = client.recv(1024).decode()
             response = json.loads(response_data)
+            # add in logic that if the encrypt is succesfull it checks for aes ecc and rsa and 
+            # displays the appropriate things to the success page, 
  
             if "error" in response:
                 return JSONResponse({"error": response["error"]}, status_code=500)
@@ -223,3 +305,12 @@ async def read_loggedOut(request: Request):
 @app.get("/encryptSuccess.html", response_class=HTMLResponse)
 async def read_encrypt_success(request: Request):
     return templates.TemplateResponse("encryptSuccess.html", {"request": request})
+
+def send_notification(flag):
+    HOST, PORT = "127.0.0.1", 65430
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_connection:
+            client_connection.connect((HOST, PORT))
+            client_connection.sendall(json.dumps({"flag": flag}).encode())
+    except Exception as e:
+        print(f"Notification error: {e}")

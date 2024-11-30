@@ -1,0 +1,21 @@
+add a link to the home page to encrypt using a private key for RSA users
+When returning the downloadble encrypted file, if rsa is used, return a public key
+
+encyrption 
+    - add rsa
+    - add sha
+
+decryption 
+    - implement all
+
+fix the ui 
+    - logo placement
+    - text placement
+    - file input
+
+must not be able to access the pages if not logged in 
+
+we have a lot of work ahead of us
+
+tomorrow we will make at least the aes encryption/ decryption work and finish the ui. 
+Monday will be the day i finish the rest of encryptions and decryptions

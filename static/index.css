@@ -369,6 +369,8 @@ input[type="file"] {
     width: 400px;
 }
 
-.selection{
+.selection {
     color: white;
+    z-index: 20; 
+    position: relative; 
 }
