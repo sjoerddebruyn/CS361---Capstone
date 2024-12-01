@@ -91,9 +91,7 @@ def save_key_to_mongo(user_id, file_name, algorithm, password, encryption_comps)
             "file_name": file_name,
             "algorithm": algorithm,
             "password": password,
-            "key": encryption_comps["key"],
-            "salt": encryption_comps["salt"],
-            "seed": encryption_comps["seed"],
+            "key": encryption_comps["key"], 
             "iv": encryption_comps["iv"],
         })
     elif algorithm == "RSA": 

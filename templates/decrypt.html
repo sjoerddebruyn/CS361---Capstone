@@ -24,7 +24,13 @@
 {%endblock%}
 
 {%block footer%}
+<div class="inline-elements">
     <a href="decryptInfo.html" class="internal_links">Decryption Information</a>
     <a href="selection.html" class="internal_links">Selection</a>
-    <a href="loggedOut.html" class="internal_links">Logout</a>
+    <form id="logout-form" method="POST" action="/logout">
+        <button type="submit" id="logout">Logout</button>
+    </form>
+</div>
+
+    
 {%endblock%}

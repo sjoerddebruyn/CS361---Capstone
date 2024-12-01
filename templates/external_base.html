@@ -10,20 +10,23 @@
 </head>
 <body>
     <div class="main-content">
-        <div class="header">
-            <img id="ext_img" src="/static/Encryptive Logo.png" alt="Logo" width="400" height="400">
+        <!-- Image positioned higher on the page -->
+        <div class="ext_img">
+            <img src="/static/Encryptive Logo.png" alt="Logo">
+        </div>
+        <div>
             <h1>{% block int_title %}Default Title{% endblock %}</h1>
         </div>
-
+    
         <div class="content">
             {% block content %}{% endblock %}
         </div>
-
+    
         <div class="footer">
             <hr id="white_line">
             <hr id="red_line">
             {% block footer %}{% endblock %}
         </div>
-    </div>
+    </div>    
 </body>
 </html>

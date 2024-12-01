@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # Add session middleware
-app.add_middleware(SessionMiddleware, secret_key="your_secret_key_here")
+app.add_middleware(SessionMiddleware, secret_key="your_secret_key")
 
 # Static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -48,6 +48,11 @@ def get_current_user(request: Request):
     if not user_id:
         raise HTTPException(status_code=401, detail="User not authenticated.")
     return user_id
+
+def require_login(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login.html", status_code=302)
 
 # User registration model
 class User(BaseModel):
@@ -152,6 +157,9 @@ async def register(
 
 @app.get("/selection.html", response_class=HTMLResponse)
 async def read_selection(request: Request):
+    login_check = require_login(request)
+    if isinstance(login_check, RedirectResponse):
+        return login_check  # Redirect to login page if not logged in
     return templates.TemplateResponse("selection.html", {"request": request})
 
 @app.get("/emailCon.html", response_class=HTMLResponse)
@@ -164,6 +172,9 @@ async def read_forgotPassword(request: Request):
 
 @app.get("/decrypt.html", response_class=HTMLResponse)
 async def read_decrypt(request: Request):
+    login_check = require_login(request)
+    if isinstance(login_check, RedirectResponse):
+        return login_check  # Redirect to login page if not logged in
     return templates.TemplateResponse("decrypt.html", {"request": request})
 
 @app.post("/decrypt.html", response_class=HTMLResponse)
@@ -188,7 +199,6 @@ async def show_decrypt(
             client_server.sendall(request_data.encode())
             response_data = client_server.recv(1024).decode()
             response = json.loads(response_data)
-
             if "error" in response:
                 return JSONResponse({"error": response["error"]}, status_code=500)
     except Exception as e:
@@ -207,6 +217,9 @@ async def read_decrypt_success(request:Request):
 
 @app.get("/encrypt.html", response_class=HTMLResponse)
 async def show_encrypt(request: Request):
+    login_check = require_login(request)
+    if isinstance(login_check, RedirectResponse):
+        return login_check  # Redirect to login page if not logged in
     return templates.TemplateResponse("encrypt.html", {"request": request})
 
 @app.post("/encrypt", response_class=JSONResponse)
@@ -309,8 +322,21 @@ async def read_encrypt_success(request: Request):
 def send_notification(flag):
     HOST, PORT = "127.0.0.1", 65430
     try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_connection:
-            client_connection.connect((HOST, PORT))
-            client_connection.sendall(json.dumps({"flag": flag}).encode())
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect((HOST, PORT))
+            # Send the flag as a JSON payload
+            client_socket.sendall(json.dumps({"flag": flag}).encode())
+
+            # Receive and decode the response
+            response_data = client_socket.recv(1024).decode()
+            response = json.loads(response_data)
+
+            # Handle the response
+            if response.get("status") == "success":
+                # Generate JavaScript alert for the message
+                print(f'<script>alert("{response["message"]}");</script>')
+            else:
+                print(f'<script>alert("Notification error: {response["message"]}");</script>')
     except Exception as e:
-        print(f"Notification error: {e}")
+        print(f'<script>alert("Error sending notification: {e}");</script>')
+

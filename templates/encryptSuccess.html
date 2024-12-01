@@ -13,5 +13,8 @@
 {%block footer%}
     <a href="encrypt.html" class="internal_links">Back to encryption</a>
     <a href="selection.html" class="internal_links">Selection</a>
-    <a href="loggedOut.html" class="internal_links">Logout</a>
+    <form id="logout" action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    
 {%endblock%}

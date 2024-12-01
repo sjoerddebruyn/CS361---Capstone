@@ -1,10 +1,11 @@
 import socket
+import json
 
 HOST = '127.0.0.1'
 PORT = 65430
-BUFFER_SIZE = 128 
+BUFFER_SIZE = 128
 
-# Message dictionary, feel free to change to whatever flag syntax will be used
+# Predefined flag-to-message mapping
 messages = {
     'rs': 'Registration was successful',
     'rf': 'Registration has failed',
@@ -17,31 +18,38 @@ messages = {
 }
 
 def start_notification_service():
-    # Init TCP/IP socket 
+    # Initialize TCP/IP socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-        server_socket.bind((HOST, PORT)) 
+        server_socket.bind((HOST, PORT))
         server_socket.listen()
-        print(f"status service is listening on {HOST}:{PORT}")
+        print(f"Notification service is listening on {HOST}:{PORT}")
 
         while True:
             conn, addr = server_socket.accept()
             with conn:
-                flag = conn.recv(BUFFER_SIZE).decode().strip()
+                try:
+                    # Receive data and parse the JSON
+                    data = conn.recv(BUFFER_SIZE).decode().strip()
+                    request = json.loads(data)
+                    flag = request.get("flag")
 
-                if flag in messages:
-                    response = {
-                        "message": messages[flag],
-                        "status": "success"
-                    }
-                else:
-                    # If the flag is unrecognized, return default err msg
-                    response = {
-                        "message": "Error: Unrecognized operation",
-                        "status": "failure"
-                    }
+                    # Determine response based on the flag
+                    if flag in messages:
+                        response = {
+                            "message": messages[flag],
+                            "status": "success"
+                        }
+                    else:
+                        response = {
+                            "message": "Error: Unrecognized operation",
+                            "status": "failure"
+                        }
 
-                print(response)
-                conn.sendall(str(response).encode())  # Return response to client
+                    print(f"Received: {flag}, Responding: {response}")
+                    conn.sendall(json.dumps(response).encode())
+                except json.JSONDecodeError:
+                    error_response = {"message": "Invalid JSON format", "status": "error"}
+                    conn.sendall(json.dumps(error_response).encode())
 
 if __name__ == "__main__":
     start_notification_service()

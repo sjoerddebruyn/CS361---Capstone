@@ -15,5 +15,8 @@
 {% endblock %}
 
 {%block footer%}
-    <a href="loggedOut.html" class="internal_links">Logout</a>
+    <form id="logout" action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+
 {%endblock%}
